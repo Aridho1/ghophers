@@ -65,10 +65,21 @@ type Product struct {
 	Stock int
 }
 
+var products []Product
+
+func generateProductID() int {
+	return len(products) + 1
+}
+
 func Task__() {
 
 	var inputMenu, inputItemName, inputPrice, inputStock string
-	products := []Product{}
+	products = append(products, Product{
+		ID:    generateProductID(),
+		Name:  "Minyak Goreng 2L",
+		Stock: 100,
+		Price: 30000,
+	})
 
 	fmt.Print("=== Toko Kelontong | INVENTORY MANAGER\n\n")
 
@@ -84,7 +95,8 @@ func Task__() {
 		fmt.Print("Pilih Menu (1-3): ")
 		fmt.Scanln(&inputMenu)
 
-		if inputMenu == "1" {
+		switch inputMenu {
+		case "1":
 			fmt.Print("\nMasukan Nama Barang: ")
 			fmt.Scanln(&inputItemName)
 
@@ -98,7 +110,7 @@ func Task__() {
 			stock, _ := strconv.Atoi(inputStock)
 
 			product := Product{
-				ID:    len(products) + 1,
+				ID:    generateProductID(),
 				Name:  inputItemName,
 				Price: price,
 				Stock: stock,
@@ -107,17 +119,16 @@ func Task__() {
 			products = append(products, product)
 
 			print("\n[SYSTEM]: Barang berhasil ditambahkan ke gudang!")
-
-		} else if inputMenu == "2" {
+		case "2":
 			fmt.Print("=== Daftar Stock Barang ===\n\n")
 			for _, product := range products {
 				print("ID: ", product.ID, "|", "Nama:", product.Name, "|", "Harga: Rp", product.Price, "|", "stock:", product.Stock, "\n")
 			}
 
 			fmt.Println("\n=========\nTotal Barang:", len(products))
-		} else if inputMenu == "3" {
+		case "3":
 			return
-		} else {
+		default:
 		}
 	}
 
