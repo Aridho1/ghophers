@@ -1,78 +1,131 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 )
 
-const (
-	Reset  = "\033[0m"
-	Red    = "\033[31m"
-	Green  = "\033[32m"
-	Yellow = "\033[33m"
-	Blue   = "\033[34m"
-)
+func learnArray() {
+	// array
+	// declare array
+	// case 1
+	var arr1 [4]string
 
-// func main() {
-//     fmt.Println(Red + "Error!" + Reset)
-//     fmt.Println(Green + "Success!" + Reset)
+	arr1[0] = "Budi"
+	arr1[1] = "Joko"
+	arr1[2] = "Bendi"
+	arr1[3] = "Bima"
+
+	fmt.Println("arr1", arr1)
+
+	// case 2
+	arr2 := [2]string{"Pen", "Book"}
+	fmt.Println("arr2", arr2)
+
+	// slice | array but have no strict length
+	var arr3 []string
+	arr3 = append(arr3, "hello")
+	fmt.Println("arr3", arr3)
+
+	// slice but another declare case
+	arr4 := []string{"Table", "Chair"}
+	fmt.Println("arr4", arr4)
+}
+
+// type Car {
+// 	Color: string
 // }
 
+func learnLoop() {
+	// using for
+	for i := 1; i < 10; i++ {
+		fmt.Println("Halo", i)
+	}
+}
+
+func learnRangeLoop() {
+	arr1 := []string{"Semangka", "Apel", "Sirsak", "Mangga"}
+
+	// range
+	// case 1, using traditional for loop
+	for i := range arr1 {
+		fmt.Println(i, arr1[i])
+	}
+
+	// case 2, using range loop
+	for index, item := range arr1 {
+		fmt.Println(index, item)
+	}
+}
+
+type Product struct {
+	ID    int
+	Name  string
+	Price int
+	Stock int
+}
+
+func Task__() {
+
+	var inputMenu, inputItemName, inputPrice, inputStock string
+	products := []Product{}
+
+	fmt.Print("=== Toko Kelontong | INVENTORY MANAGER\n\n")
+
+	menus := []string{"Tambah Barang", "Lihat Semua Stok", "Keluar"}
+
+	for endless := 0; endless <= 1; endless-- {
+
+		fmt.Print("\n\n\n\n")
+		for index, menu := range menus {
+			fmt.Println("[", index+1, "]", menu)
+		}
+
+		fmt.Print("Pilih Menu (1-3): ")
+		fmt.Scanln(&inputMenu)
+
+		if inputMenu == "1" {
+			fmt.Print("\nMasukan Nama Barang: ")
+			fmt.Scanln(&inputItemName)
+
+			fmt.Print("Masukan Harga Barang: ")
+			fmt.Scanln(&inputPrice)
+
+			fmt.Print("Masukan Stock Barang: ")
+			fmt.Scanln(&inputStock)
+
+			price, _ := strconv.Atoi(inputPrice)
+			stock, _ := strconv.Atoi(inputStock)
+
+			product := Product{
+				ID:    len(products) + 1,
+				Name:  inputItemName,
+				Price: price,
+				Stock: stock,
+			}
+
+			products = append(products, product)
+
+			print("\n[SYSTEM]: Barang berhasil ditambahkan ke gudang!")
+
+		} else if inputMenu == "2" {
+			fmt.Print("=== Daftar Stock Barang ===\n\n")
+			for _, product := range products {
+				print("ID: ", product.ID, "|", "Nama:", product.Name, "|", "Harga: Rp", product.Price, "|", "stock:", product.Stock, "\n")
+			}
+
+			fmt.Println("\n=========\nTotal Barang:", len(products))
+		} else if inputMenu == "3" {
+			return
+		} else {
+		}
+	}
+
+}
+
 func main() {
-	// fmt.Println("hello world")
-
-	// // txt, err := fmt.Scanln("test: ")
-	// var txt string
-
-	// fmt.Printf("Test: ")
-	// fmt.Scanln(&txt)
-
-	// fmt.Printf("hasil: %s", txt)
-
-	var inputPrice, inputMoney string
-	// var price, money int
-	// var err Error
-
-	fmt.Printf("\n\n========================\n\n")
-	fmt.Printf("Harga Barang: ")
-	fmt.Scanln(&inputPrice)
-
-	price, err := strconv.Atoi(inputPrice)
-	if err != nil {
-		if errors.Is(err, strconv.ErrSyntax) {
-			fmt.Printf("Error, inputnya harus int, %s itu bukan int :D", inputPrice)
-		} else {
-			fmt.Println("Error: ", err)
-		}
-
-		main()
-		return
-	}
-
-	fmt.Printf("Uang yang dimiliki: ")
-	fmt.Scanln(&inputMoney)
-	money, err := strconv.Atoi(inputMoney)
-	if err != nil {
-		if errors.Is(err, strconv.ErrSyntax) {
-			fmt.Printf(Red+"Error, inputnya harus int, %s itu bukan int :D"+Reset, inputMoney)
-		} else {
-			fmt.Println("Error: ", err)
-		}
-
-		main()
-		return
-	}
-
-	var sisa int = money - price
-
-	if sisa < 0 {
-		fmt.Println("[SYSTEM]: Transaksi ditolak! Uang kurang ", sisa*-1)
-		main()
-		return
-	}
-
-	fmt.Println("[SYSTEM]: Transaksi berhasil. Kembalian anda ", sisa)
-
-	fmt.Printf("\n\n========================\n\n")
+	// learnArray()
+	// learnLoop()
+	// learnRangeLoop()
+	Task__()
 }
