@@ -204,6 +204,7 @@ func NewApp() *App {
 					fmt.Println(strings.Repeat("-", idW+nameW+priceW+stockW+9))
 
 					for _, p := range app.Products {
+						time.Sleep(WAIT_SECONDARY)
 						fmt.Printf("%*d | %-*s | %*s | %*d\n",
 							idW, p.ID,
 							nameW, p.Name,
@@ -211,6 +212,69 @@ func NewApp() *App {
 							stockW, p.Stock,
 						)
 					}
+
+					time.Sleep(WAIT_SECONDARY)
+					fmt.Println("\n=========\nTotal Barang:", len(app.Products))
+
+					return nil
+				},
+			}, {
+				Name: "Transaksi",
+				Handler: func() error {
+					if len(app.Products) == 0 {
+						fmt.Println("[SYSTEM]: Tidak ada barang.")
+						return nil
+					}
+
+					var id, qty int
+
+					fmt.Print("> Masukkan ID Barang: ")
+					if !scanner.Scan() {
+						return nil
+					}
+					id, _ = strconv.Atoi(scanner.Text())
+
+					var product *Product
+
+					for i := range app.Products {
+						if app.Products[i].ID == id {
+							product = &app.Products[i]
+							break
+						}
+					}
+
+					if product == nil {
+						fmt.Println("[SYSTEM]: Barang tidak ditemukan.")
+						return nil
+					}
+
+					fmt.Printf("> Jumlah beli (%s): ", product.Name)
+					if !scanner.Scan() {
+						return nil
+					}
+					qty, _ = strconv.Atoi(scanner.Text())
+
+					if qty <= 0 {
+						fmt.Println("[SYSTEM]: Jumlah tidak valid.")
+						return nil
+					}
+
+					if qty > product.Stock {
+						fmt.Println("[SYSTEM]: Stok tidak mencukupi.")
+						return nil
+					}
+
+					total := qty * product.Price
+					product.Stock -= qty
+
+					fmt.Println("\n===== STRUK =====")
+					fmt.Println("Barang :", product.Name)
+					fmt.Println("Harga  : Rp.", NumFormat(product.Price))
+					fmt.Println("Qty    :", qty)
+					fmt.Println("-------------------------")
+					fmt.Println("Total  : Rp.", NumFormat(total))
+					fmt.Println("=========================")
+					fmt.Println("[SYSTEM]: Transaksi berhasil!")
 
 					return nil
 				},
@@ -223,8 +287,6 @@ func NewApp() *App {
 			},
 		},
 	}
-
-	app.Products = append(app.Products, Product{ID: app.generateProductID(), Name: "Minyak Goreng 2L", Stock: 100, Price: 30000})
 
 	app.Products = append(app.Products, Product{
 		ID:    app.generateProductID(),
