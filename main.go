@@ -2,61 +2,7 @@ package main
 
 import (
 	"fmt"
-	"strconv"
 )
-
-func learnArray() {
-	// array
-	// declare array
-	// case 1
-	var arr1 [4]string
-
-	arr1[0] = "Budi"
-	arr1[1] = "Joko"
-	arr1[2] = "Bendi"
-	arr1[3] = "Bima"
-
-	fmt.Println("arr1", arr1)
-
-	// case 2
-	arr2 := [2]string{"Pen", "Book"}
-	fmt.Println("arr2", arr2)
-
-	// slice | array but have no strict length
-	var arr3 []string
-	arr3 = append(arr3, "hello")
-	fmt.Println("arr3", arr3)
-
-	// slice but another declare case
-	arr4 := []string{"Table", "Chair"}
-	fmt.Println("arr4", arr4)
-}
-
-// type Car {
-// 	Color: string
-// }
-
-func learnLoop() {
-	// using for
-	for i := 1; i < 10; i++ {
-		fmt.Println("Halo", i)
-	}
-}
-
-func learnRangeLoop() {
-	arr1 := []string{"Semangka", "Apel", "Sirsak", "Mangga"}
-
-	// range
-	// case 1, using traditional for loop
-	for i := range arr1 {
-		fmt.Println(i, arr1[i])
-	}
-
-	// case 2, using range loop
-	for index, item := range arr1 {
-		fmt.Println(index, item)
-	}
-}
 
 type Product struct {
 	ID    int
@@ -73,7 +19,9 @@ func generateProductID() int {
 
 func Task__() {
 
-	var inputMenu, inputItemName, inputPrice, inputStock string
+	var inputMenu, inputItemName string
+	var inputPrice, inputStock int
+
 	products = append(products, Product{
 		ID:    generateProductID(),
 		Name:  "Minyak Goreng 2L",
@@ -81,18 +29,21 @@ func Task__() {
 		Price: 30000,
 	})
 
-	fmt.Print("=== Toko Kelontong | INVENTORY MANAGER\n\n")
+	fmt.Print("=== Toko Kelontong | INVENTORY MANAGER ===\n\n")
 
-	menus := []string{"Tambah Barang", "Lihat Semua Stok", "Keluar"}
+	menus := []string{"Tambah Barang", "Lihat Semua Stok", "Beli", "Keluar"}
 
 	for endless := 0; endless <= 1; endless-- {
 
-		fmt.Print("\n\n\n\n")
+		if endless != 0 {
+			fmt.Print("\n\n\n\n")
+		}
+
 		for index, menu := range menus {
 			fmt.Println("[", index+1, "]", menu)
 		}
 
-		fmt.Print("Pilih Menu (1-3): ")
+		fmt.Print("\nPilih Menu (1-3): ")
 		fmt.Scanln(&inputMenu)
 
 		switch inputMenu {
@@ -106,27 +57,28 @@ func Task__() {
 			fmt.Print("Masukan Stock Barang: ")
 			fmt.Scanln(&inputStock)
 
-			price, _ := strconv.Atoi(inputPrice)
-			stock, _ := strconv.Atoi(inputStock)
-
 			product := Product{
 				ID:    generateProductID(),
 				Name:  inputItemName,
-				Price: price,
-				Stock: stock,
+				Price: inputPrice,
+				Stock: inputStock,
 			}
 
 			products = append(products, product)
 
 			print("\n[SYSTEM]: Barang berhasil ditambahkan ke gudang!")
+
 		case "2":
-			fmt.Print("=== Daftar Stock Barang ===\n\n")
+			fmt.Printf("=== Daftar Stock Barang ===\n\n%-5s | %-20s | %-16s | %-5s\n", "ID", "Nama", "Harga", "Stok")
 			for _, product := range products {
-				print("ID: ", product.ID, "|", "Nama:", product.Name, "|", "Harga: Rp", product.Price, "|", "stock:", product.Stock, "\n")
+				fmt.Printf("%-5d | %-20s | Rp. %-12d | %-5d\n", product.ID, product.Name, product.Price, product.Stock)
 			}
 
 			fmt.Println("\n=========\nTotal Barang:", len(products))
+
 		case "3":
+
+		case "4":
 			return
 		default:
 		}
@@ -135,8 +87,5 @@ func Task__() {
 }
 
 func main() {
-	// learnArray()
-	// learnLoop()
-	// learnRangeLoop()
 	Task__()
 }
