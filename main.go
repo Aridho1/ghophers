@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -119,11 +120,39 @@ func (a *App) Run() {
 	}
 }
 
+func (a *App) productTableWidth() (idW, nameW, priceW, stockW int) {
+	idW = len("ID")
+	nameW = len("Nama")
+	priceW = len("Harga")
+	stockW = len("Stok")
+
+	for _, p := range a.Products {
+		if w := len(strconv.Itoa(p.ID)); w > idW {
+			idW = w
+		}
+
+		if w := len(p.Name); w > nameW {
+			nameW = w
+		}
+
+		price := "Rp" + NumFormat(p.Price)
+		if w := len(price); w > priceW {
+			priceW = w
+		}
+
+		if w := len(strconv.Itoa(p.Stock)); w > stockW {
+			stockW = w
+		}
+	}
+
+	return
+}
+
 func NewApp() *App {
 	var app *App
 
 	app = &App{
-		Title: "Toko Kelontong",
+		Title: "Waoreng Serba Ada",
 		Menus: []Menu{
 			{
 				Name: "Tambah Barang",
@@ -163,15 +192,25 @@ func NewApp() *App {
 			}, {
 				Name: "Lihat Semua Stock",
 				Handler: func() error {
-					fmt.Printf("=== Daftar Stock Barang ===\n\n%-5s | %-20s | %-16s | %-5s\n", "ID", "Nama", "Harga", "Stok")
+					idW, nameW, priceW, stockW := app.productTableWidth()
 
-					for _, product := range app.Products {
-						time.Sleep(WAIT_SECONDARY)
-						fmt.Printf("%-5d | %-20s | Rp. %-12s | %-5d\n", product.ID, product.Name, NumFormat(product.Price), product.Stock)
+					fmt.Printf("%*s | %-*s | %*s | %*s\n",
+						idW, "ID",
+						nameW, "Nama",
+						priceW, "Harga",
+						stockW, "Stok",
+					)
+
+					fmt.Println(strings.Repeat("-", idW+nameW+priceW+stockW+9))
+
+					for _, p := range app.Products {
+						fmt.Printf("%*d | %-*s | %*s | %*d\n",
+							idW, p.ID,
+							nameW, p.Name,
+							priceW, "Rp"+NumFormat(p.Price),
+							stockW, p.Stock,
+						)
 					}
-
-					time.Sleep(WAIT_SECONDARY)
-					fmt.Println("\n=========\nTotal Barang:", len(app.Products))
 
 					return nil
 				},
@@ -185,25 +224,76 @@ func NewApp() *App {
 		},
 	}
 
-	app.Products = append(app.Products, Product{
-		ID:    app.generateProductID(),
-		Name:  "Minyak Goreng 2L",
-		Stock: 100,
-		Price: 30000,
-	})
-
-	app.Products = append(app.Products, Product{
-		ID:    app.generateProductID(),
-		Name:  "Beras 200gr",
-		Stock: 400,
-		Price: 3000,
-	})
+	app.Products = append(app.Products, Product{ID: app.generateProductID(), Name: "Minyak Goreng 2L", Stock: 100, Price: 30000})
 
 	app.Products = append(app.Products, Product{
 		ID:    app.generateProductID(),
 		Name:  "Susu HU TAO RILL",
 		Stock: 69,
 		Price: 67000,
+	})
+
+	app.Products = append(app.Products, Product{
+		ID:    app.generateProductID(),
+		Name:  "Indomie Rasa Tanggal Tua",
+		Stock: 404,
+		Price: 13337,
+	})
+
+	app.Products = append(app.Products, Product{
+		ID:    app.generateProductID(),
+		Name:  "Aqua Air Mata Skripsi",
+		Stock: 420,
+		Price: 6969,
+	})
+
+	app.Products = append(app.Products, Product{
+		ID:    app.generateProductID(),
+		Name:  "Oreo Isi Janji Manis",
+		Stock: 100,
+		Price: 15000,
+	})
+
+	app.Products = append(app.Products, Product{
+		ID:    app.generateProductID(),
+		Name:  "Parfum Bau Deadline",
+		Stock: 99,
+		Price: 45000,
+	})
+
+	app.Products = append(app.Products, Product{
+		ID:    app.generateProductID(),
+		Name:  "Power Bank 1000% (Sisa 1%)",
+		Stock: 1,
+		Price: 99999,
+	})
+
+	app.Products = append(app.Products, Product{
+		ID:    app.generateProductID(),
+		Name:  "Mie Instan Rasa Balikan",
+		Stock: 0,
+		Price: 14000,
+	})
+
+	app.Products = append(app.Products, Product{
+		ID:    app.generateProductID(),
+		Name:  "Keyboard RGB FPS +999",
+		Stock: 88,
+		Price: 250000,
+	})
+
+	app.Products = append(app.Products, Product{
+		ID:    app.generateProductID(),
+		Name:  "Es Teh Rasa Chat Dibales",
+		Stock: 123,
+		Price: 5000,
+	})
+
+	app.Products = append(app.Products, Product{
+		ID:    app.generateProductID(),
+		Name:  "Kopi Anti Ngantuk (Bohong)",
+		Stock: 200,
+		Price: 18000,
 	})
 
 	return app
