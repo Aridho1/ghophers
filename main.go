@@ -124,26 +124,6 @@ func NewApp() *App {
 
 	app = &App{
 		Title: "Toko Kelontong",
-		Products: []Product{
-			{
-				ID:    app.generateProductID(),
-				Name:  "Minyak Goreng 2L",
-				Stock: 100,
-				Price: 30000,
-			},
-			{
-				ID:    app.generateProductID(),
-				Name:  "Beras 200gr",
-				Stock: 400,
-				Price: 3000,
-			},
-			{
-				ID:    app.generateProductID(),
-				Name:  "Susu HU TAO RILL",
-				Stock: 69,
-				Price: 67000,
-			},
-		},
 		Menus: []Menu{
 			{
 				Name: "Tambah Barang",
@@ -204,6 +184,27 @@ func NewApp() *App {
 			},
 		},
 	}
+
+	app.Products = append(app.Products, Product{
+		ID:    app.generateProductID(),
+		Name:  "Minyak Goreng 2L",
+		Stock: 100,
+		Price: 30000,
+	})
+
+	app.Products = append(app.Products, Product{
+		ID:    app.generateProductID(),
+		Name:  "Beras 200gr",
+		Stock: 400,
+		Price: 3000,
+	})
+
+	app.Products = append(app.Products, Product{
+		ID:    app.generateProductID(),
+		Name:  "Susu HU TAO RILL",
+		Stock: 69,
+		Price: 67000,
+	})
 
 	return app
 }
