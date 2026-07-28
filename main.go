@@ -15,6 +15,24 @@ const (
 
 var scanner = bufio.NewScanner(os.Stdin)
 
+func NumFormat(num int) string {
+	str := strconv.Itoa(num)
+	strLen := len(str)
+	if strLen <= 3 {
+		return str
+	}
+
+	var result []byte
+	for i := range strLen {
+		if i > 0 && i%3 == 0 {
+			result = append([]byte{'.'}, result...)
+		}
+		result = append([]byte{str[strLen-1-i]}, result...)
+	}
+
+	return string(result)
+}
+
 type Product struct {
 	ID    int
 	Name  string
@@ -122,8 +140,8 @@ func NewApp() *App {
 			{
 				ID:    app.generateProductID(),
 				Name:  "Susu HU TAO RILL",
-				Stock: 67,
-				Price: 9110000,
+				Stock: 69,
+				Price: 67000,
 			},
 		},
 		Menus: []Menu{
@@ -169,7 +187,7 @@ func NewApp() *App {
 
 					for _, product := range app.Products {
 						time.Sleep(WAIT_SECONDARY)
-						fmt.Printf("%-5d | %-20s | Rp. %-12d | %-5d\n", product.ID, product.Name, product.Price, product.Stock)
+						fmt.Printf("%-5d | %-20s | Rp. %-12s | %-5d\n", product.ID, product.Name, NumFormat(product.Price), product.Stock)
 					}
 
 					time.Sleep(WAIT_SECONDARY)
