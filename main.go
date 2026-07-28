@@ -1,26 +1,25 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"os"
+	"strconv"
 	"time"
 )
 
 const (
-	WAIT_PRIMARY = 1 * time.Second
+	WAIT_PRIMARY   = 1 * time.Second
+	WAIT_SECONDARY = 300 * time.Millisecond
 )
+
+var scanner = bufio.NewScanner(os.Stdin)
 
 type Product struct {
 	ID    int
 	Name  string
 	Price int
 	Stock int
-}
-
-var products []Product
-
-func generateProductID() int {
-	return len(products) + 1
 }
 
 type Menu struct {
@@ -36,25 +35,34 @@ type App struct {
 	Products []Product
 }
 
+func (a *App) generateProductID() int {
+	if a == nil || a.Products == nil {
+		return 1
+	}
+
+	return len(a.Products) + 1
+}
+
 func (a *App) LogTitle() {
 	fmt.Printf("=== %s | INVENTORY MANAGER ===\n\n", a.Title)
 }
 
 func (a *App) LogListMenu(menuLen int) {
+
+	fmt.Printf("List Menu\n\n")
+
 	for i, menu := range a.Menus {
 		num := i + 1
 
-		if i == menuLen {
+		if i == menuLen-1 {
 			num = 0
 		}
 
-		fmt.Printf("%-2d. %s\n", num, menu.Name)
+		fmt.Printf("%d. %s\n", num, menu.Name)
 	}
 }
 
 func (a *App) Run() {
-	var inputMenu int
-
 	menuLen := len(a.Menus)
 	loop := 0
 
@@ -68,9 +76,19 @@ func (a *App) Run() {
 		a.LogTitle()
 		a.LogListMenu(menuLen)
 
-		fmt.Printf("\nPilih Menu [0-%d]: ", menuLen-1)
-		fmt.Scan(&inputMenu)
+		fmt.Printf("\n> Pilih Menu [0-%d]: ", menuLen-1)
 
+		if !scanner.Scan() {
+			os.Exit(1)
+		}
+
+		inputMenu, err := strconv.Atoi(scanner.Text())
+		if err != nil {
+			fmt.Println("Input harus berupa angka!")
+			continue
+		}
+
+		fmt.Printf("\n")
 		time.Sleep(WAIT_PRIMARY)
 
 		if inputMenu < 0 || inputMenu > menuLen-1 {
@@ -80,7 +98,6 @@ func (a *App) Run() {
 		} else {
 			a.Menus[inputMenu-1].Handler()
 		}
-
 	}
 }
 
@@ -91,10 +108,22 @@ func NewApp() *App {
 		Title: "Toko Kelontong",
 		Products: []Product{
 			{
-				ID:    generateProductID(),
+				ID:    app.generateProductID(),
 				Name:  "Minyak Goreng 2L",
 				Stock: 100,
 				Price: 30000,
+			},
+			{
+				ID:    app.generateProductID(),
+				Name:  "Beras 200gr",
+				Stock: 400,
+				Price: 3000,
+			},
+			{
+				ID:    app.generateProductID(),
+				Name:  "Susu HU TAO RILL",
+				Stock: 67,
+				Price: 9110000,
 			},
 		},
 		Menus: []Menu{
@@ -104,17 +133,24 @@ func NewApp() *App {
 					var inputItemName string
 					var inputPrice, inputStock int
 
-					fmt.Print("\nMasukan Nama Barang: ")
-					fmt.Scanln(&inputItemName)
+					fmt.Print("> Masukan Nama Barang: ")
+					if !scanner.Scan() {
+						os.Exit(1)
+					}
+					inputItemName = scanner.Text()
 
-					fmt.Print("Masukan Harga Barang: ")
-					fmt.Scanln(&inputPrice)
+					fmt.Print("> Masukan Harga Barang: ")
+					if scanner.Scan() {
+						inputPrice, _ = strconv.Atoi(scanner.Text())
+					}
 
-					fmt.Print("Masukan Stock Barang: ")
-					fmt.Scanln(&inputStock)
+					fmt.Print("> Masukan Stock Barang: ")
+					if scanner.Scan() {
+						inputStock, _ = strconv.Atoi(scanner.Text())
+					}
 
 					product := Product{
-						ID:    generateProductID(),
+						ID:    app.generateProductID(),
 						Name:  inputItemName,
 						Price: inputPrice,
 						Stock: inputStock,
@@ -122,7 +158,7 @@ func NewApp() *App {
 
 					app.Products = append(app.Products, product)
 
-					print("\n[SYSTEM]: Barang berhasil ditambahkan ke gudang!")
+					fmt.Println("\n[SYSTEM]: Barang berhasil ditambahkan ke gudang!")
 
 					return nil
 				},
@@ -130,11 +166,14 @@ func NewApp() *App {
 				Name: "Lihat Semua Stock",
 				Handler: func() error {
 					fmt.Printf("=== Daftar Stock Barang ===\n\n%-5s | %-20s | %-16s | %-5s\n", "ID", "Nama", "Harga", "Stok")
-					for _, product := range products {
+
+					for _, product := range app.Products {
+						time.Sleep(WAIT_SECONDARY)
 						fmt.Printf("%-5d | %-20s | Rp. %-12d | %-5d\n", product.ID, product.Name, product.Price, product.Stock)
 					}
 
-					fmt.Println("\n=========\nTotal Barang:", len(products))
+					time.Sleep(WAIT_SECONDARY)
+					fmt.Println("\n=========\nTotal Barang:", len(app.Products))
 
 					return nil
 				},
@@ -151,44 +190,7 @@ func NewApp() *App {
 	return app
 }
 
-// func Task__() {
-
-// 	var inputMenu string
-
-// 	fmt.Print("=== Toko Kelontong | INVENTORY MANAGER ===\n\n")
-
-// 	// menus := []string{"Tambah Barang", "Lihat Semua Stok", "Beli", "Keluar"}
-
-// 	for endless := 0; endless <= 1; endless-- {
-
-// 		if endless != 0 {
-// 			fmt.Print("\n\n\n\n")
-// 		}
-
-// 		// for index, menu := range menus {
-// 		// 	fmt.Println("[", index+1, "]", menu)
-// 		// }
-
-// 		fmt.Print("\nPilih Menu (1-3): ")
-// 		fmt.Scanln(&inputMenu)
-
-// 		// switch inputMenu {
-// 		// case "1":
-
-// 		// case "2":
-
-// 		// case "3":
-
-// 		// case "4":
-// 		// 	return
-// 		// default:
-// 		// }
-// 	}
-
-// }
-
 func main() {
-	// Task__()
 	app := NewApp()
 	app.Run()
 }
