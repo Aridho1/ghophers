@@ -4,6 +4,8 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"os/exec"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -15,6 +17,31 @@ const (
 )
 
 var scanner = bufio.NewScanner(os.Stdin)
+
+func ClearScreen() {
+	var cmd *exec.Cmd
+
+	if runtime.GOOS == "windows" {
+		cmd = exec.Command("cmd", "/c", "cls")
+	} else {
+		cmd = exec.Command("clear")
+	}
+
+	cmd.Stdout = os.Stdout
+	cmd.Run()
+
+	// fmt.Print("\033[2J")
+}
+
+func PressEnterToContinue() {
+	fmt.Print("\nPress Enter To Continue...")
+	if scanner.Scan() {
+		fmt.Print("\n")
+		return
+	}
+
+	os.Exit(1)
+}
 
 func NumFormat(num int) string {
 	str := strconv.Itoa(num)
@@ -88,10 +115,12 @@ func (a *App) Run() {
 	for {
 		loop += 1
 		if loop != 1 {
-			fmt.Print("\n\n\n\n")
+			// fmt.Print("\n\n\n\n")
 			time.Sleep(WAIT_PRIMARY)
+			PressEnterToContinue()
 		}
 
+		ClearScreen()
 		a.LogTitle()
 		a.LogListMenu(menuLen)
 
@@ -147,6 +176,28 @@ func (a *App) productTableWidth() (idW, nameW, priceW, stockW int) {
 
 	return
 }
+func (a *App) LogListProduct() {
+	idW, nameW, priceW, stockW := a.productTableWidth()
+
+	fmt.Printf("%*s | %-*s | %*s | %*s\n",
+		idW, "ID",
+		nameW, "Nama",
+		priceW, "Harga",
+		stockW, "Stok",
+	)
+
+	fmt.Println(strings.Repeat("-", idW+nameW+priceW+stockW+9))
+
+	for _, p := range a.Products {
+		time.Sleep(WAIT_SECONDARY)
+		fmt.Printf("%*d | %-*s | %*s | %*d\n",
+			idW, p.ID,
+			nameW, p.Name,
+			priceW, "Rp"+NumFormat(p.Price),
+			stockW, p.Stock,
+		)
+	}
+}
 
 func NewApp() *App {
 	var app *App
@@ -192,26 +243,8 @@ func NewApp() *App {
 			}, {
 				Name: "Lihat Semua Stock",
 				Handler: func() error {
-					idW, nameW, priceW, stockW := app.productTableWidth()
 
-					fmt.Printf("%*s | %-*s | %*s | %*s\n",
-						idW, "ID",
-						nameW, "Nama",
-						priceW, "Harga",
-						stockW, "Stok",
-					)
-
-					fmt.Println(strings.Repeat("-", idW+nameW+priceW+stockW+9))
-
-					for _, p := range app.Products {
-						time.Sleep(WAIT_SECONDARY)
-						fmt.Printf("%*d | %-*s | %*s | %*d\n",
-							idW, p.ID,
-							nameW, p.Name,
-							priceW, "Rp"+NumFormat(p.Price),
-							stockW, p.Stock,
-						)
-					}
+					app.LogListProduct()
 
 					time.Sleep(WAIT_SECONDARY)
 					fmt.Println("\n=========\nTotal Barang:", len(app.Products))
@@ -226,42 +259,48 @@ func NewApp() *App {
 						return nil
 					}
 
+					app.LogListProduct()
+
 					var id, qty int
-
-					fmt.Print("> Masukkan ID Barang: ")
-					if !scanner.Scan() {
-						return nil
-					}
-					id, _ = strconv.Atoi(scanner.Text())
-
 					var product *Product
 
-					for i := range app.Products {
-						if app.Products[i].ID == id {
-							product = &app.Products[i]
-							break
+					for {
+						fmt.Print("\n> Masukkan ID Barang: ")
+						if !scanner.Scan() {
+							return nil
 						}
-					}
+						id, _ = strconv.Atoi(scanner.Text())
 
-					if product == nil {
-						fmt.Println("[SYSTEM]: Barang tidak ditemukan.")
-						return nil
-					}
+						for i := range app.Products {
+							if app.Products[i].ID == id {
+								product = &app.Products[i]
+								break
+							}
+						}
 
-					fmt.Printf("> Jumlah beli (%s): ", product.Name)
-					if !scanner.Scan() {
-						return nil
-					}
-					qty, _ = strconv.Atoi(scanner.Text())
+						if product == nil {
+							fmt.Println("[SYSTEM]: Barang tidak ditemukan.")
+							continue
+						}
 
-					if qty <= 0 {
-						fmt.Println("[SYSTEM]: Jumlah tidak valid.")
-						return nil
-					}
+						fmt.Printf("> Jumlah beli (%s): ", product.Name)
+						if !scanner.Scan() {
+							return nil
+						}
+						qty, _ = strconv.Atoi(scanner.Text())
 
-					if qty > product.Stock {
-						fmt.Println("[SYSTEM]: Stok tidak mencukupi.")
-						return nil
+						if qty <= 0 {
+							fmt.Println("[SYSTEM]: Jumlah tidak valid.")
+							continue
+						}
+
+						if qty > product.Stock {
+							fmt.Println("[SYSTEM]: Stok tidak mencukupi.")
+							continue
+						}
+
+						break
+
 					}
 
 					total := qty * product.Price
