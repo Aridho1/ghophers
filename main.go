@@ -8,6 +8,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -199,11 +200,19 @@ func (a *App) LogListProduct() {
 	}
 }
 
+func (a *App) EnsureProductLen() bool {
+	if len(a.Products) == 0 {
+		fmt.Println("[SYSTEM]: Tidak ada barang.")
+		return false
+	}
+	return true
+}
+
 func NewApp() *App {
 	var app *App
 
 	app = &App{
-		Title: "Waoreng Serba Ada",
+		Title: "Waroeng Serba Ada",
 		Menus: []Menu{
 			{
 				Name: "Tambah Barang",
@@ -243,7 +252,6 @@ func NewApp() *App {
 			}, {
 				Name: "Lihat Semua Stock",
 				Handler: func() error {
-
 					app.LogListProduct()
 
 					time.Sleep(WAIT_SECONDARY)
@@ -254,8 +262,7 @@ func NewApp() *App {
 			}, {
 				Name: "Transaksi",
 				Handler: func() error {
-					if len(app.Products) == 0 {
-						fmt.Println("[SYSTEM]: Tidak ada barang.")
+					if !app.EnsureProductLen() {
 						return nil
 					}
 
@@ -318,6 +325,74 @@ func NewApp() *App {
 					return nil
 				},
 			}, {
+				Name: "Case: Flash Sale",
+				Handler: func() error {
+					if !app.EnsureProductLen() {
+						return nil
+					}
+
+					app.LogListProduct()
+
+					const FLASH_SALE_QUANTITY_PEOPLE = 6767
+					var id int
+					var product *Product
+
+					for {
+						fmt.Print("\n> Masukkan ID Barang untuk FLASH SALE 12.12: ")
+						if !scanner.Scan() {
+							return nil
+						}
+						id, _ = strconv.Atoi(scanner.Text())
+
+						for i := range app.Products {
+							if app.Products[i].ID == id {
+								product = &app.Products[i]
+								break
+							}
+						}
+
+						if product == nil {
+							fmt.Println("[SYSTEM]: Barang tidak ditemukan.")
+							continue
+						}
+
+						break
+					}
+
+					fmt.Printf("\n>>> Serbuan 12.12 untuk \"%s\"! Stok %d, penyerbu %d orang\n\n", product.Name, product.Stock, FLASH_SALE_QUANTITY_PEOPLE)
+
+					start := time.Now()
+					var wg sync.WaitGroup
+
+					prevStock := product.Stock
+
+					for range FLASH_SALE_QUANTITY_PEOPLE {
+						if product.Stock < 1 {
+							break
+						}
+
+						wg.Add(1)
+						go func() {
+							defer wg.Done()
+							product.Stock--
+						}()
+					}
+
+					wg.Wait()
+					elapsed := time.Since(start)
+
+					const _INDENT = 12
+
+					fmt.Printf("====== FLASH SALE 12.12 SELESAI  ======\n")
+					fmt.Printf("%-*s: %dms\n%-*s: %d\n%-*s: %d\n\n", _INDENT, "Waktu Proses", elapsed.Milliseconds(), _INDENT, "Unit Terjual", prevStock-product.Stock, _INDENT, "Sisa stok", product.Stock)
+
+					if product.Stock < 0 {
+						fmt.Printf("\n>> BAHAYA! Stok \"%s\" MINUS %d -- Toko menjual barang yang tidak ada!\n", product.Name, product.Stock*-1)
+					}
+
+					return nil
+				},
+			}, {
 				Name: "Exit",
 				Handler: func() error {
 					os.Exit(0)
@@ -326,6 +401,8 @@ func NewApp() *App {
 			},
 		},
 	}
+
+	app.Products = append(app.Products, Product{ID: app.generateProductID(), Name: "Minyak Goreng 2L", Stock: 100, Price: 30000})
 
 	app.Products = append(app.Products, Product{
 		ID:    app.generateProductID(),
