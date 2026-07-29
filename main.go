@@ -67,6 +67,8 @@ type Product struct {
 	Name  string
 	Price int
 	Stock int
+
+	mu sync.Mutex
 }
 
 type Menu struct {
@@ -79,7 +81,7 @@ type MenuHandler func() error
 type App struct {
 	Title    string
 	Menus    []Menu
-	Products []Product
+	Products []*Product
 }
 
 func (a *App) generateProductID() int {
@@ -236,7 +238,7 @@ func NewApp() *App {
 						inputStock, _ = strconv.Atoi(scanner.Text())
 					}
 
-					product := Product{
+					product := &Product{
 						ID:    app.generateProductID(),
 						Name:  inputItemName,
 						Price: inputPrice,
@@ -280,7 +282,7 @@ func NewApp() *App {
 
 						for i := range app.Products {
 							if app.Products[i].ID == id {
-								product = &app.Products[i]
+								product = app.Products[i]
 								break
 							}
 						}
@@ -346,7 +348,7 @@ func NewApp() *App {
 
 						for i := range app.Products {
 							if app.Products[i].ID == id {
-								product = &app.Products[i]
+								product = app.Products[i]
 								break
 							}
 						}
@@ -367,24 +369,27 @@ func NewApp() *App {
 					prevStock := product.Stock
 
 					for range FLASH_SALE_QUANTITY_PEOPLE {
-						if product.Stock < 1 {
-							break
-						}
-
 						wg.Add(1)
 						go func() {
 							defer wg.Done()
-							product.Stock--
+
+							product.mu.Lock()
+							defer product.mu.Unlock()
+
+							if product.Stock > 0 {
+								product.Stock--
+							}
 						}()
 					}
 
 					wg.Wait()
 					elapsed := time.Since(start)
 
-					const _INDENT = 12
+					const _INDENT = 18
+					soldedItem := prevStock - product.Stock
 
 					fmt.Printf("====== FLASH SALE 12.12 SELESAI  ======\n")
-					fmt.Printf("%-*s: %dms\n%-*s: %d\n%-*s: %d\n\n", _INDENT, "Waktu Proses", elapsed.Milliseconds(), _INDENT, "Unit Terjual", prevStock-product.Stock, _INDENT, "Sisa stok", product.Stock)
+					fmt.Printf("%-*s: %dms\n%-*s: %d\n%-*s: %d\n%-*s: %d\n\n", _INDENT, "Waktu Proses", elapsed.Milliseconds(), _INDENT, "Berhasil Beli", soldedItem, _INDENT, "Gagal (kehabisan)", FLASH_SALE_QUANTITY_PEOPLE-soldedItem, _INDENT, "Sisa stok", product.Stock)
 
 					if product.Stock < 0 {
 						fmt.Printf("\n>> BAHAYA! Stok \"%s\" MINUS %d -- Toko menjual barang yang tidak ada!\n", product.Name, product.Stock*-1)
@@ -402,72 +407,72 @@ func NewApp() *App {
 		},
 	}
 
-	app.Products = append(app.Products, Product{ID: app.generateProductID(), Name: "Minyak Goreng 2L", Stock: 100, Price: 30000})
+	app.Products = append(app.Products, &Product{ID: app.generateProductID(), Name: "Minyak Goreng 2L", Stock: 6101, Price: 30000})
 
-	app.Products = append(app.Products, Product{
+	app.Products = append(app.Products, &Product{
 		ID:    app.generateProductID(),
 		Name:  "Susu HU TAO RILL",
 		Stock: 69,
 		Price: 67000,
 	})
 
-	app.Products = append(app.Products, Product{
+	app.Products = append(app.Products, &Product{
 		ID:    app.generateProductID(),
 		Name:  "Indomie Rasa Tanggal Tua",
 		Stock: 404,
 		Price: 13337,
 	})
 
-	app.Products = append(app.Products, Product{
+	app.Products = append(app.Products, &Product{
 		ID:    app.generateProductID(),
 		Name:  "Aqua Air Mata Skripsi",
 		Stock: 420,
 		Price: 6969,
 	})
 
-	app.Products = append(app.Products, Product{
+	app.Products = append(app.Products, &Product{
 		ID:    app.generateProductID(),
 		Name:  "Oreo Isi Janji Manis",
 		Stock: 100,
 		Price: 15000,
 	})
 
-	app.Products = append(app.Products, Product{
+	app.Products = append(app.Products, &Product{
 		ID:    app.generateProductID(),
 		Name:  "Parfum Bau Deadline",
 		Stock: 99,
 		Price: 45000,
 	})
 
-	app.Products = append(app.Products, Product{
+	app.Products = append(app.Products, &Product{
 		ID:    app.generateProductID(),
 		Name:  "Power Bank 1000% (Sisa 1%)",
 		Stock: 1,
 		Price: 99999,
 	})
 
-	app.Products = append(app.Products, Product{
+	app.Products = append(app.Products, &Product{
 		ID:    app.generateProductID(),
 		Name:  "Mie Instan Rasa Balikan",
 		Stock: 0,
 		Price: 14000,
 	})
 
-	app.Products = append(app.Products, Product{
+	app.Products = append(app.Products, &Product{
 		ID:    app.generateProductID(),
 		Name:  "Keyboard RGB FPS +999",
 		Stock: 88,
 		Price: 250000,
 	})
 
-	app.Products = append(app.Products, Product{
+	app.Products = append(app.Products, &Product{
 		ID:    app.generateProductID(),
 		Name:  "Es Teh Rasa Chat Dibales",
 		Stock: 123,
 		Price: 5000,
 	})
 
-	app.Products = append(app.Products, Product{
+	app.Products = append(app.Products, &Product{
 		ID:    app.generateProductID(),
 		Name:  "Kopi Anti Ngantuk (Bohong)",
 		Stock: 200,
